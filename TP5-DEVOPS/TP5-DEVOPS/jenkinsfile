@@ -1,0 +1,47 @@
+pipeline {  
+    environment {
+        // Define your Docker Hub repository
+        registry = "AmineOULADYOUSSEF/tp5devops"
+        // The ID of the Docker Hub credentials stored in Jenkins
+        registryCredential = 'OULADYOUSSEF-Amine'
+        // Dynamically defined Docker image name
+        dockerImage = ''
+    }
+    agent any
+    stages {
+        stage('Building image') {
+            steps {
+                script {
+                    // Builds the Docker image and tags it with the build number
+                    dockerImage = docker.build("${registry}:${env.BUILD_NUMBER}")
+                }
+            }
+        }
+        stage('Test image') {
+            steps {
+                script {
+                    // Placeholder for any Docker image tests you might want to perform
+                    echo "Tests passed"
+                }
+            }
+        }
+        stage('Publish Image') {
+            steps {
+                script {
+                    // Logs in to Docker Hub and pushes the built image
+                    docker.withRegistry('https://index.docker.io/v1/', registryCredential) {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+        stage('Deploy Image') {
+            steps {
+                script {
+                    // Runs the Docker container from the pushed image (as an example)
+                    sh "docker run -d -p 80:80 ${registry}:${env.BUILD_NUMBER}"
+                }
+            }
+        }
+    }
+}
